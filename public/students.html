@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Students List</title>
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+</head>
+<body class="bg-light">
+
+<div class="container mt-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-primary">📋 Registered Students</h2>
+    <a href="index.html" class="btn btn-secondary">← Back to Dashboard</a>
+  </div>
+
+  <div id="studentList" class="row g-3">
+    <!-- Student cards will be inserted here -->
+  </div>
+</div>
+
+<script>
+  async function fetchStudents() {
+    const res = await fetch("/students");
+    const students = await res.json();
+
+    const list = document.getElementById("studentList");
+
+    if (students.length === 0) {
+      list.innerHTML = `<p class="text-muted">No students found.</p>`;
+      return;
+    }
+
+    students.forEach((student) => {
+      const col = document.createElement("div");
+      col.className = "col-md-4";
+
+      col.innerHTML = `
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <h5 class="card-title text-capitalize">${student.name}</h5>
+            <p class="card-text mb-0"><strong>Email:</strong> ${student.email}</p>
+            <p class="card-text"><strong>ID:</strong> ${student.id}</p>
+          </div>
+        </div>
+      `;
+
+      list.appendChild(col);
+    });
+  }
+
+  fetchStudents();
+</script>
+
+</body>
+</html>

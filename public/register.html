@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Register</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+  <!-- No flash container here since we don't need to display a message on the registration page -->
+
+<div class="container mt-5">
+  <div class="card p-4 shadow-sm mx-auto" style="max-width: 400px;">
+    <h3 class="text-center mb-3">👤 Student Registration</h3>
+    <form id="registerForm">
+      <div class="mb-3">
+        <label>Name</label>
+        <input type="text" name="name" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label>Email</label>
+        <input type="email" name="email" class="form-control" required />
+      </div>
+      <div class="mb-3">
+        <label>Password</label>
+        <input type="password" name="password" class="form-control" required />
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Register</button>
+    </form>
+    <div class="text-center mt-3">
+      <a href="login.html">Already have an account? Login</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("registerForm").addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const data = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      password: formData.get("password")
+    };
+
+    const res = await fetch("/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+
+    const result = await res.json();
+    if (res.ok) {
+      // Save the message and redirect to login
+      localStorage.setItem("registerSuccess", result.message);
+      location.href = "login.html";
+    } else {
+      alert(result.message || "Registration failed.");
+    }
+  });
+</script>
+
+</body>
+</html>
