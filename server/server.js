@@ -38,7 +38,7 @@ app.post('/login', (req, res) => {
 
 // Get All Students
 app.get('/students', (req, res) => {
-  db.query("SELECT name, email FROM students", (err, results) => {
+  db.query("SELECT id,name, email FROM students", (err, results) => {
     if (err) {
       return res.status(500).json({ message: "Error fetching students" });
     }
