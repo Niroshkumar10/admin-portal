@@ -17,6 +17,10 @@
         <input type="text" name="name" class="form-control" required />
       </div>
       <div class="mb-3">
+        <label>Student ID</label>
+        <input type="text" name="student_id" class="form-control" required />
+      </div>
+      <div class="mb-3">
         <label>Email</label>
         <input type="email" name="email" class="form-control" required />
       </div>
@@ -37,11 +41,12 @@
     e.preventDefault();
 
     const formData = new FormData(this);
-    const data = {
-      name: formData.get("name"),
-      email: formData.get("email"),
-      password: formData.get("password")
-    };
+  const data = {
+  student_id: formData.get("student_id"),
+  name: formData.get("name"),
+  email: formData.get("email"),
+  password: formData.get("password")
+};
 
     const res = await fetch("/register", {
       method: "POST",

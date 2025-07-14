@@ -2,19 +2,22 @@ const express = require('express');
 const path = require('path');
 const db = require('./db');
 const app = express();
+const cors = require('cors');
+app.use(cors());
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Register Route
+// Update register route to include student_id
 app.post('/register', (req, res) => {
-  const { name, email, password } = req.body;
+  const { student_id, name, email, password } = req.body;
   db.query(
-    "INSERT INTO students (name, email, password) VALUES (?, ?, ?)",
-    [name, email, password],
+    "INSERT INTO students (student_id, name, email, password) VALUES (?, ?, ?, ?)",
+    [student_id, name, email, password],
     (err) => {
       if (err) {
-        return res.status(500).json({ message: "Email already registered." });
+        return res.status(500).json({ message: err.message.includes('Duplicate') ? "Email or Student ID already registered." : "Registration failed." });
       }
       res.json({ message: "Registration successful." });
     }
@@ -38,7 +41,7 @@ app.post('/login', (req, res) => {
 
 // Get All Students
 app.get('/students', (req, res) => {
-  db.query("SELECT name, email FROM students", (err, results) => {
+  db.query("SELECT id, student_id, name, email FROM students", (err, results) => {
     if (err) {
       return res.status(500).json({ message: "Error fetching students" });
     }
@@ -46,6 +49,64 @@ app.get('/students', (req, res) => {
   });
 });
 
+// Get Single Student
+app.put('/students/:id', (req, res) => {
+  const { id } = req.params;
+  const { student_id, name, email } = req.body;
+  
+  db.query(
+    "UPDATE students SET student_id = ?, name = ?, email = ? WHERE id = ?",
+    [student_id, name, email, id],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: err.message.includes('Duplicate') ? "Email or Student ID already exists" : "Error updating student" });
+      }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      res.json({ message: "Student updated successfully" });
+    }
+  );
+});
+
+// Update Student
+app.put('/students/:id', (req, res) => {
+  const { id } = req.params;
+  const { name, email } = req.body;
+  
+  db.query(
+    "UPDATE students SET name = ?, email = ? WHERE id = ?",
+    [name, email, id],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: "Error updating student" });
+      }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      res.json({ message: "Student updated successfully" });
+    }
+  );
+});
+
+// Delete Student
+app.delete('/students/:id', (req, res) => {
+  const { id } = req.params;
+  
+  db.query(
+    "DELETE FROM students WHERE id = ?",
+    [id],
+    (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: "Error deleting student" });
+      }
+      if (results.affectedRows === 0) {
+        return res.status(404).json({ message: "Student not found" });
+      }
+      res.json({ message: "Student deleted successfully" });
+    }
+  );
+});
 
 const PORT = 3009;
 app.listen(PORT, () => {
