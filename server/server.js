@@ -31,7 +31,7 @@ app.post('/login', (req, res) => {
       if (err || results.length === 0) {
         return res.status(401).json({ message: "Invalid credentials." });
       }
-      res.json({ message: "Login successful." });
+      res.json({ message: "Login success." });
     }
   );
 });
