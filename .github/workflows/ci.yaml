@@ -8,6 +8,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Prevent job from hanging forever
+
     services:
       mysql:
         image: mysql:5.7
@@ -26,7 +28,7 @@ jobs:
       DB_HOST: 127.0.0.1
       DB_PORT: 3309
       DB_USER: root
-      DB_PASSWORD: rootpass123
+      DB_PASSWORD: rootpass123   # ✅ Added missing password
       DB_NAME: student_db
 
     steps:
@@ -41,13 +43,34 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Wait for MySQL to be ready
+      - name: Wait for MySQL to be ready (with timeout)
         run: |
-          echo "Waiting for MySQL..."
-          until nc -z 127.0.0.1 3309; do
-            sleep 1
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..30}; do
+            if nc -z 127.0.0.1 3309; then
+              echo "MySQL is ready!"
+              break
+            fi
+            echo "Waiting..."
+            sleep 2
           done
-          echo "MySQL is ready"
+
+          # Final check
+          if ! nc -z 127.0.0.1 3309; then
+            echo "MySQL did not start in time"
+            exit 1
+          fi
+
+      - name: (Optional) Check DB connection
+        run: |
+          sudo apt-get update && sudo apt-get install -y mysql-client
+          mysql -h 127.0.0.1 -P 3309 -uroot -prootpass123 -e "SHOW DATABASES;"
 
       - name: Run tests
         run: npm test
+
+      - name: Print MySQL logs on failure
+        if: failure()
+        run: |
+          docker ps -a
+          docker logs $(docker ps -aqf "ancestor=mysql:5.7")
