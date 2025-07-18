@@ -1,23 +1,22 @@
-name: CI pipline
+name: CI pipeline
 
 on:
-    push:
-        branches:
-            -main
-
+  push:
+    branches:
+      - main
 
 jobs:
-    test:
-        runs-on: ubuntu-latest
-        steps:
-        - name: Checkout code            // This step checks out the repository code so that it can be used in the workflow
-          uses: actions/checkout@v3
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-        - name: setup Node.js             // This step sets up the Node.js environment for the workflow
-          uses: actions/setup-node@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
 
-        - name: install dependencies     // This step installs the necessary dependencies for the project
-          run: npm install
+      - name: Install dependencies
+        run: npm install
 
-        - name: run tests             // This step runs the tests defined in the project
-          run: npm test               // This command executes the test scripts defined in package.json
+      - name: Run tests
+        run: npm test
