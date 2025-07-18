@@ -109,6 +109,8 @@ app.delete('/students/:id', (req, res) => {
 });
 
 const PORT = 3009;
-app.listen(PORT, () => {
+const server=app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
+
+module.exports= {app,server} // Export the app for testing purposes
