@@ -22,7 +22,7 @@ jobs:
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
     steps:
       - name: ⬇️ Checkout code
@@ -36,10 +36,14 @@ jobs:
       - name: 📦 Install dependencies
         run: npm install
 
-      - name: 🔧 Wait for MySQL
+      - name: ✅ Check MySQL connection
         run: |
-          echo "Waiting for DB..."
-          sleep 20
+          echo "Checking MySQL availability..."
+          until mysqladmin ping -h 127.0.0.1 -u root -proot --silent; do
+            echo "MySQL not ready yet. Waiting..."
+            sleep 5
+          done
+          echo "MySQL is up!"
 
       - name: 🧪 Run Tests
         env:
@@ -49,3 +53,7 @@ jobs:
           DB_NAME: student_db
           DB_PORT: 3306
         run: npm test
+
+      - name: 🐛 Debug MySQL Logs (if needed)
+        if: failure()
+        run: docker logs $(docker ps -q --filter ancestor=mysql:5.7)
