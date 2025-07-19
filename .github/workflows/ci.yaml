@@ -1,76 +1,51 @@
-name: CI pipeline
+name: Node.js CI
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15  # Prevent job from hanging forever
 
     services:
       mysql:
         image: mysql:5.7
         env:
-          MYSQL_ROOT_PASSWORD: rootpass123
+          MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: student_db
         ports:
-          - 3309:3306
+          - 3306:3306
         options: >-
           --health-cmd="mysqladmin ping --silent"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=3
 
-    env:
-      DB_HOST: 127.0.0.1
-      DB_PORT: 3309
-      DB_USER: root
-      DB_PASSWORD: rootpass123   # ✅ Added missing password
-      DB_NAME: student_db
-
     steps:
-      - name: Checkout code
+      - name: ⬇️ Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Node.js
+      - name: 🟢 Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: 📦 Install dependencies
         run: npm install
 
-      - name: Wait for MySQL to be ready (with timeout)
+      - name: 🔧 Wait for MySQL
         run: |
-          echo "Waiting for MySQL to be ready..."
-          for i in {1..30}; do
-            if nc -z 127.0.0.1 3309; then
-              echo "MySQL is ready!"
-              break
-            fi
-            echo "Waiting..."
-            sleep 2
-          done
+          echo "Waiting for DB..."
+          sleep 20
 
-          # Final check
-          if ! nc -z 127.0.0.1 3309; then
-            echo "MySQL did not start in time"
-            exit 1
-          fi
-
-      - name: (Optional) Check DB connection
-        run: |
-          sudo apt-get update && sudo apt-get install -y mysql-client
-          mysql -h 127.0.0.1 -P 3309 -uroot -prootpass123 -e "SHOW DATABASES;"
-
-      - name: Run tests
+      - name: 🧪 Run Tests
+        env:
+          DB_HOST: 127.0.0.1
+          DB_USER: root
+          DB_PASSWORD: root
+          DB_NAME: student_db
+          DB_PORT: 3306
         run: npm test
-
-      - name: Print MySQL logs on failure
-        if: failure()
-        run: |
-          docker ps -a
-          docker logs $(docker ps -aqf "ancestor=mysql:5.7")
